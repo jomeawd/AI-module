@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Calendar, Star, ArrowRight, X, Users, Clock, Shield } from 'lucide-react';
+import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
+import { MapPin, Star, ArrowRight, X, Users, Clock, Shield } from 'lucide-react';
 
 const destinations = [
   {
@@ -16,18 +16,17 @@ const destinations = [
     description:
       "Vivez l'effervescence de l'Exposition Universelle et admirez la Tour Eiffel fraîchement construite. Flânez dans les cafés de Montmartre et rencontrez les esprits les plus brillants de l'époque.",
     highlights: [
-      "Inauguration de la Tour Eiffel",
-      "Exposition Universelle de 1889",
-      "Cafés de Montmartre avec les Impressionnistes",
-      "Gastronomie de la Belle Époque",
+      'Inauguration de la Tour Eiffel',
+      'Exposition Universelle de 1889',
+      'Cafés de Montmartre avec les Impressionnistes',
+      'Gastronomie de la Belle Époque',
     ],
-    color: 'from-amber-500/20 to-orange-600/20',
-    accent: '#f59e0b',
+    emoji: '🗼',
   },
   {
     id: 'cretace',
     title: 'Crétacé -65M',
-    subtitle: 'L\'Ère des Dinosaures',
+    subtitle: "L'Ère des Dinosaures",
     period: 'Mésozoïque',
     price: '18 900',
     rating: 4.8,
@@ -37,13 +36,12 @@ const destinations = [
     description:
       "Explorez des forêts luxuriantes peuplées de créatures majestueuses. Observez les dinosaures dans leur habitat naturel depuis nos zones d'observation sécurisées.",
     highlights: [
-      "Observation de T-Rex et Tricératops",
-      "Survol en aéronef sécurisé",
-      "Flore préhistorique unique",
-      "Coucher de soleil sur le Gondwana",
+      'Observation de T-Rex et Tricératops',
+      'Survol en aéronef sécurisé',
+      'Flore préhistorique unique',
+      'Coucher de soleil sur le Gondwana',
     ],
-    color: 'from-emerald-500/20 to-teal-600/20',
-    accent: '#10b981',
+    emoji: '🦕',
   },
   {
     id: 'florence',
@@ -58,50 +56,93 @@ const destinations = [
     description:
       "Plongez au cœur de la Renaissance florentine. Assistez à la création du David de Michel-Ange et côtoyez Léonard de Vinci dans son atelier.",
     highlights: [
-      "Atelier de Michel-Ange et le David",
-      "Rencontre avec Léonard de Vinci",
-      "Palais des Médicis",
-      "Cuisine toscane authentique du XVIe",
+      'Atelier de Michel-Ange et le David',
+      'Rencontre avec Léonard de Vinci',
+      'Palais des Médicis',
+      'Cuisine toscane authentique du XVIe',
     ],
-    color: 'from-violet-500/20 to-purple-600/20',
-    accent: '#8b5cf6',
+    emoji: '🎨',
   },
 ];
 
 function DestinationCard({ dest, onClick, index }) {
-  const imgSrc = dest.image;
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const rotateX = useTransform(y, [-100, 100], [5, -5]);
+  const rotateY = useTransform(x, [-100, 100], [-5, 5]);
+
+  function handleMouseMove(e) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    x.set(e.clientX - rect.left - rect.width / 2);
+    y.set(e.clientY - rect.top - rect.height / 2);
+  }
+
+  function handleMouseLeave() {
+    x.set(0);
+    y.set(0);
+  }
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 50 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-50px' }}
-      transition={{ duration: 0.6, delay: index * 0.15 }}
-      whileHover={{ y: -8 }}
+      initial={{ opacity: 0, y: 80, rotateX: 15 }}
+      whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+      viewport={{ once: true, margin: '-80px' }}
+      transition={{ duration: 0.7, delay: index * 0.2, ease: [0.22, 1, 0.36, 1] }}
+      style={{ rotateX, rotateY, transformPerspective: 800 }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
       onClick={onClick}
-      className="group cursor-pointer relative rounded-2xl overflow-hidden bg-dark-card border border-dark-border hover:border-gold/30 transition-all duration-500 card-glow"
+      className="group cursor-pointer relative rounded-2xl overflow-hidden bg-dark-card border border-dark-border hover:border-gold/40 transition-all duration-500"
     >
-      {/* Image */}
+      {/* Hover glow effect */}
+      <motion.div
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-10"
+        style={{
+          background: 'radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(212,168,83,0.08), transparent 60%)',
+        }}
+      />
+
+      {/* Image with zoom */}
       <div className="relative h-64 overflow-hidden">
-        <img
-          src={imgSrc}
+        <motion.img
+          src={dest.image}
           alt={dest.title}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          className="w-full h-full object-cover"
+          whileHover={{ scale: 1.12 }}
+          transition={{ duration: 0.7, ease: 'easeOut' }}
           loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-dark-card via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-dark-card via-dark-card/20 to-transparent" />
+
+        {/* Floating emoji */}
+        <motion.div
+          className="absolute top-4 left-4 text-3xl"
+          animate={{ y: [0, -5, 0], rotate: [0, 5, -5, 0] }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          {dest.emoji}
+        </motion.div>
+
         <div className="absolute top-4 right-4 glass px-3 py-1 rounded-full text-xs text-gold-light flex items-center gap-1">
           <Star className="w-3 h-3 fill-gold text-gold" />
           {dest.rating}
         </div>
-        <div className="absolute top-4 left-4 glass px-3 py-1 rounded-full text-xs text-white">
+
+        {/* Period badge that slides in */}
+        <motion.div
+          initial={{ x: -100, opacity: 0 }}
+          whileInView={{ x: 0, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.3 + index * 0.2, duration: 0.5 }}
+          className="absolute bottom-4 left-4 glass px-3 py-1 rounded-full text-xs text-white"
+        >
           {dest.period}
-        </div>
+        </motion.div>
       </div>
 
       {/* Content */}
       <div className="p-6">
-        <h3 className="text-2xl font-bold text-white mb-1 font-['Playfair_Display']">
+        <h3 className="text-2xl font-bold text-white mb-1 font-['Playfair_Display'] group-hover:text-gold transition-colors duration-300">
           {dest.title}
         </h3>
         <p className="text-gold text-sm mb-3">{dest.subtitle}</p>
@@ -112,52 +153,86 @@ function DestinationCard({ dest, onClick, index }) {
         <div className="flex items-center justify-between">
           <div>
             <span className="text-xs text-gray-500">à partir de</span>
-            <p className="text-gold text-xl font-bold">{dest.price}€</p>
+            <motion.p
+              className="text-gold text-xl font-bold"
+              whileHover={{ scale: 1.1 }}
+            >
+              {dest.price}€
+            </motion.p>
           </div>
-          <div className="flex items-center gap-2 text-gold-light text-sm group-hover:gap-3 transition-all duration-300">
+          <motion.div
+            className="flex items-center gap-2 text-gold-light text-sm"
+            whileHover={{ x: 5 }}
+            transition={{ type: 'spring', stiffness: 300 }}
+          >
             Découvrir <ArrowRight className="w-4 h-4" />
-          </div>
+          </motion.div>
         </div>
       </div>
+
+      {/* Bottom border animation on hover */}
+      <motion.div
+        className="absolute bottom-0 left-0 h-[2px] bg-gradient-to-r from-gold to-gold-light"
+        initial={{ width: '0%' }}
+        whileHover={{ width: '100%' }}
+        transition={{ duration: 0.4 }}
+      />
     </motion.div>
   );
 }
 
 function DestinationModal({ dest, onClose }) {
   if (!dest) return null;
-  const imgSrc = dest.image;
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md"
       onClick={onClose}
     >
       <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+        initial={{ scale: 0.8, opacity: 0, y: 50 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.8, opacity: 0, y: 50 }}
+        transition={{ type: 'spring', damping: 22, stiffness: 250 }}
         className="bg-dark-card border border-dark-border rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Modal image */}
-        <div className="relative h-64 md:h-72">
-          <img src={imgSrc} alt={dest.title} className="w-full h-full object-cover" />
+        <div className="relative h-64 md:h-72 overflow-hidden">
+          <motion.img
+            src={dest.image}
+            alt={dest.title}
+            className="w-full h-full object-cover"
+            initial={{ scale: 1.2 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.8 }}
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-dark-card to-transparent" />
-          <button
+          <motion.button
             onClick={onClose}
+            whileHover={{ rotate: 90, scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
             className="absolute top-4 right-4 glass p-2 rounded-full text-white hover:text-gold transition-colors"
           >
             <X size={20} />
-          </button>
+          </motion.button>
+          <motion.div
+            className="absolute top-4 left-4 text-4xl"
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ type: 'spring', delay: 0.3 }}
+          >
+            {dest.emoji}
+          </motion.div>
         </div>
 
         <div className="p-6 md:p-8 -mt-8 relative">
           <div className="flex items-center gap-2 mb-2">
-            <span className="glass text-xs text-gold-light px-2 py-1 rounded-full">{dest.period}</span>
+            <span className="glass text-xs text-gold-light px-2 py-1 rounded-full">
+              {dest.period}
+            </span>
             <span className="flex items-center gap-1 text-xs text-gold">
               <Star className="w-3 h-3 fill-gold" /> {dest.rating}
             </span>
@@ -169,46 +244,55 @@ function DestinationModal({ dest, onClose }) {
           <p className="text-gold mb-4">{dest.subtitle}</p>
           <p className="text-gray-400 leading-relaxed mb-6">{dest.description}</p>
 
-          {/* Info grid */}
           <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="glass rounded-xl p-3 text-center">
-              <Clock className="w-5 h-5 text-gold mx-auto mb-1" />
-              <p className="text-xs text-gray-400">Durée</p>
-              <p className="text-sm text-white font-medium">{dest.duration}</p>
-            </div>
-            <div className="glass rounded-xl p-3 text-center">
-              <Users className="w-5 h-5 text-gold mx-auto mb-1" />
-              <p className="text-xs text-gray-400">Groupe</p>
-              <p className="text-sm text-white font-medium">{dest.groupSize}</p>
-            </div>
-            <div className="glass rounded-xl p-3 text-center">
-              <Shield className="w-5 h-5 text-gold mx-auto mb-1" />
-              <p className="text-xs text-gray-400">Sécurité</p>
-              <p className="text-sm text-white font-medium">Maximale</p>
-            </div>
+            {[
+              { icon: Clock, label: 'Durée', value: dest.duration },
+              { icon: Users, label: 'Groupe', value: dest.groupSize },
+              { icon: Shield, label: 'Sécurité', value: 'Maximale' },
+            ].map((info, i) => (
+              <motion.div
+                key={info.label}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 + i * 0.1 }}
+                className="glass rounded-xl p-3 text-center"
+              >
+                <info.icon className="w-5 h-5 text-gold mx-auto mb-1" />
+                <p className="text-xs text-gray-400">{info.label}</p>
+                <p className="text-sm text-white font-medium">{info.value}</p>
+              </motion.div>
+            ))}
           </div>
 
-          {/* Highlights */}
           <h4 className="text-white font-semibold mb-3">Points forts</h4>
           <ul className="space-y-2 mb-6">
             {dest.highlights.map((h, i) => (
-              <li key={i} className="flex items-start gap-2 text-gray-300 text-sm">
+              <motion.li
+                key={i}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 + i * 0.1 }}
+                className="flex items-start gap-2 text-gray-300 text-sm"
+              >
                 <MapPin className="w-4 h-4 text-gold shrink-0 mt-0.5" />
                 {h}
-              </li>
+              </motion.li>
             ))}
           </ul>
 
-          {/* Price and CTA */}
           <div className="flex items-center justify-between pt-4 border-t border-dark-border">
             <div>
               <p className="text-xs text-gray-500">À partir de</p>
               <p className="text-3xl font-bold text-gold">{dest.price}€</p>
               <p className="text-xs text-gray-500">par personne</p>
             </div>
-            <button className="bg-gradient-to-r from-gold to-gold-dark text-dark font-semibold px-6 py-3 rounded-lg hover:from-gold-light hover:to-gold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-gold/20">
+            <motion.button
+              whileHover={{ scale: 1.05, boxShadow: '0 0 25px rgba(212,168,83,0.3)' }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-gradient-to-r from-gold to-gold-dark text-dark font-semibold px-6 py-3 rounded-lg"
+            >
               Réserver maintenant
-            </button>
+            </motion.button>
           </div>
         </div>
       </motion.div>
@@ -221,7 +305,6 @@ export default function Destinations() {
 
   return (
     <section id="destinations" className="py-24 px-6 relative">
-      {/* Background glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gold/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto relative">
@@ -232,10 +315,25 @@ export default function Destinations() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="text-gold text-sm uppercase tracking-widest">Nos destinations</span>
+          <motion.span
+            initial={{ opacity: 0, letterSpacing: '0.1em' }}
+            whileInView={{ opacity: 1, letterSpacing: '0.2em' }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="text-gold text-sm uppercase tracking-widest"
+          >
+            Nos destinations
+          </motion.span>
           <h2 className="text-4xl md:text-5xl font-bold text-white mt-3 mb-4 font-['Playfair_Display']">
             Trois Époques, Trois <span className="shimmer-text">Aventures</span>
           </h2>
+          <motion.div
+            initial={{ width: 0 }}
+            whileInView={{ width: 80 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="h-[2px] bg-gradient-to-r from-gold to-gold-light mx-auto mb-4"
+          />
           <p className="text-gray-400 max-w-xl mx-auto">
             Chaque destination a été soigneusement sélectionnée pour offrir une expérience
             unique et inoubliable à travers le temps.

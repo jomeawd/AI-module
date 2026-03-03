@@ -22,39 +22,53 @@ export default function Navbar() {
 
   return (
     <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.6, ease: 'easeOut' }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.8, delay: 3.2, ease: [0.22, 1, 0.36, 1] }}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled
-          ? 'glass shadow-lg shadow-black/20'
+          ? 'glass shadow-lg shadow-black/30'
           : 'bg-transparent'
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         <a href="#hero" className="flex items-center gap-2 group">
-          <Clock className="w-6 h-6 text-gold group-hover:rotate-180 transition-transform duration-700" />
+          <motion.div
+            animate={scrolled ? {} : { rotate: [0, 360] }}
+            transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+          >
+            <Clock className="w-6 h-6 text-gold group-hover:text-gold-light transition-colors" />
+          </motion.div>
           <span className="text-xl font-bold font-['Playfair_Display'] text-white">
             Time<span className="text-gold">Travel</span>
           </span>
         </a>
 
         <div className="hidden md:flex items-center gap-8">
-          {links.map((link) => (
-            <a
+          {links.map((link, i) => (
+            <motion.a
               key={link.href}
               href={link.href}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 3.4 + i * 0.08 }}
+              whileHover={{ y: -2 }}
               className="text-sm text-gray-300 hover:text-gold transition-colors duration-300 relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-gold after:transition-all after:duration-300 hover:after:w-full"
             >
               {link.label}
-            </a>
+            </motion.a>
           ))}
-          <a
+          <motion.a
             href="#destinations"
-            className="bg-gradient-to-r from-gold to-gold-dark text-dark font-semibold px-5 py-2 rounded-lg hover:from-gold-light hover:to-gold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-gold/20 text-sm"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 3.8, type: 'spring' }}
+            whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(212,168,83,0.3)' }}
+            whileTap={{ scale: 0.95 }}
+            className="bg-gradient-to-r from-gold to-gold-dark text-dark font-semibold px-5 py-2 rounded-lg text-sm"
           >
             Réserver
-          </a>
+          </motion.a>
         </div>
 
         <button
@@ -74,15 +88,18 @@ export default function Navbar() {
             className="md:hidden glass border-t border-gold/10"
           >
             <div className="px-6 py-4 flex flex-col gap-4">
-              {links.map((link) => (
-                <a
+              {links.map((link, i) => (
+                <motion.a
                   key={link.href}
                   href={link.href}
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: i * 0.05 }}
                   onClick={() => setMobileOpen(false)}
                   className="text-gray-300 hover:text-gold transition-colors py-2"
                 >
                   {link.label}
-                </a>
+                </motion.a>
               ))}
               <a
                 href="#destinations"
