@@ -122,6 +122,7 @@ Ce projet a été développé en utilisant le "vibe coding" avec Claude Code com
 
 L'IA a permis de gagner un temps considérable sur le scaffolding, le design system et l'intégration des animations, tout en maintenant une architecture propre et maintenable.
 
-## Licence
+## Auteur 
 
-Projet pédagogique — M1/M2 Digital & IA
+John MEAWAD BOTROS 
+Maelle AGONDJO DONDIA
